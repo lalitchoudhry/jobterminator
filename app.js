@@ -13,7 +13,7 @@ app.get('/', (req, res)=>{
     res.send('hello');
 });
 
-app.post('/register', async(req, res)=>{
+app.post('/register', async(req, res, next)=>{
     try {
         const {name, email, mobile, password} = req.body;
 
@@ -44,12 +44,12 @@ app.post('/register', async(req, res)=>{
 
         res.status(201).json(user);
     } catch (err) {
-        console.log(err)
-        res.status(400).json({message: err.message});
+        next(err);
+        // res.status(400).json({message: err.message});
     }
 })
 
-app.post('/login', async(req, res)=>{
+app.post('/login', async(req, res, next)=>{
     try {
         const {email, password} = req.body;
         if (!(email && password)) {
@@ -70,7 +70,7 @@ app.post('/login', async(req, res)=>{
         }
         res.status(400).json("Invalid Credential")
     } catch (err) {
-        res.status(501).json({message: err.message});
+        next(err);
     }
 })
 
