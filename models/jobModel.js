@@ -36,10 +36,10 @@ const jobSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    skills: [{
-        type: String,
+    skills: {
+        type: Array,
         required: true
-    }]
+    }
 
 });
 

@@ -1,9 +1,11 @@
 require('dotenv').config();
 const express = require('express');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const auth = require('./middleware/auth');
 const mongoose = require('./config/database');
-const User = require('./models/userModel')
+const User = require('./models/userModel');
+const Job = require('./models/jobModel');
 
 const app = express();
 app.use(express.json());
@@ -35,13 +37,6 @@ app.post('/register', async(req, res, next)=>{
             password: encryptedPassword
         });
 
-        const token = jwt.sign(
-            {user_id: user._id, email},
-            process.env.TOKEN_KEY
-        );
-
-        user.token = token;
-
         res.status(201).json(user);
     } catch (err) {
         next(err);
@@ -70,6 +65,33 @@ app.post('/login', async(req, res, next)=>{
         }
         res.status(400).json("Invalid Credential")
     } catch (err) {
+        next(err);
+    }
+})
+
+app.post('/protected', auth, async(req, res, next)=>{
+    try {
+        const {companyName, logoUrl, jobPosition, monthSalary, jobType, workAt, location, jobDescription, aboutCompany, skills} = req.body;
+        if (!(companyName && logoUrl && jobPosition && monthSalary && jobType && workAt && location && jobDescription && aboutCompany && skills)) {
+            return res.status(400).json("All Input Is Required")
+        }
+
+        const job = await Job.create({
+            companyName: companyName,
+            logoUrl: logoUrl,
+            jobPosition: jobPosition,
+            monthSalary: monthSalary,
+            jobType: jobType,
+            workAt: workAt,
+            location: location,
+            jobDescription: jobDescription,
+            aboutCompany: aboutCompany,
+            skills: skills
+        })
+        res.status(201).json({message: 'successfuly added', job});
+
+    } catch (err) {
+        err.status = 400;
         next(err);
     }
 })
