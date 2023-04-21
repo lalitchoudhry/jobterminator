@@ -11,11 +11,15 @@ const app = express();
 app.use(express.json());
 
 // routes
+app.get('/health', (req, res)=>{
+    res.send('yeah, its working');
+})
+
 app.get('/', (req, res)=>{
     res.send('hello');
 });
 
-app.post('/register', async(req, res, next)=>{
+app.post('/jobterminator/register', async(req, res, next)=>{
     try {
         const {name, email, mobile, password} = req.body;
 
@@ -44,7 +48,7 @@ app.post('/register', async(req, res, next)=>{
     }
 })
 
-app.post('/login', async(req, res, next)=>{
+app.post('/jobterminator/login', async(req, res, next)=>{
     try {
         const {email, password} = req.body;
         if (!(email && password)) {
@@ -69,7 +73,7 @@ app.post('/login', async(req, res, next)=>{
     }
 })
 
-app.post('/protected', auth, async(req, res, next)=>{
+app.post('/jobterminator/protected', auth, async(req, res, next)=>{
     try {
         const {companyName, logoUrl, jobPosition, monthSalary, jobType, workAt, location, jobDescription, aboutCompany, skills} = req.body;
         if (!(companyName && logoUrl && jobPosition && monthSalary && jobType && workAt && location && jobDescription && aboutCompany && skills)) {
@@ -95,5 +99,26 @@ app.post('/protected', auth, async(req, res, next)=>{
         next(err);
     }
 })
+
+// get filterd and detailed jobs
+app.post('/jobterminator/list',auth, async(req, res, next)=>{
+
+    try {
+        let filter = req.query;
+        if (req.query.skills) {
+            let skills = {$in: req.query.skills};
+            filter.skills = skills;
+        }
+        
+        console.log(filter)
+        const jobList = await Job.find(filter).catch((err)=>next(err));
+
+        res.send(jobList);
+    } catch (err) {
+        next(err);
+    }
+    
+})
+
 
 module.exports = app;
