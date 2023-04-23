@@ -41,7 +41,7 @@ app.post('/jobterminator/register', async(req, res, next)=>{
             password: encryptedPassword
         });
 
-        res.status(201).json(user);
+        res.status(201).json(user.name);
     } catch (err) {
         next(err);
         // res.status(400).json({message: err.message});
@@ -65,7 +65,7 @@ app.post('/jobterminator/login', async(req, res, next)=>{
             );
             user.token = token;
 
-            return res.status(200).json(token);
+            return res.status(200).json(user.name);
         }
         res.status(400).json("Invalid Credential")
     } catch (err) {
@@ -118,6 +118,23 @@ app.post('/jobterminator/list',auth, async(req, res, next)=>{
         next(err);
     }
     
+})
+
+app.put('/jobterminator/:id', async(req, res, next)=>{
+    try {
+        const {id} = req.params;
+        console.log(id)
+        const job = await Job.findByIdAndUpdate(id, req.body);
+        if (!job) {
+            return res.status(404).json("Cannot find any product1")
+        }
+
+        const updateJob = await Job.findById(id);
+        res.status(200).send(updateJob);
+    } catch (err) {
+        err.status = 500;
+        next(err)
+    }
 })
 
 
